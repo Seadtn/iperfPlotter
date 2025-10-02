@@ -31,13 +31,13 @@ seaborn
 
 ```bash
 git clone <repository-url>
-cd iperf3-plotter
+cd iperfPlotter
 ```
 
 2. Install dependencies:
 
 ```bash
-pip install numpy pandas matplotlib seaborn
+pip install -r requirements.txt
 ```
 
 ## Usage
