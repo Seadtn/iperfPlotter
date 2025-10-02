@@ -47,23 +47,23 @@ pip install -r requirements.txt
 Plot all JSON files in a folder:
 
 ```bash
-./iperf.plot.py -f /path/to/iperf/results
+./iperf3_plot.py -f /path/to/iperf/results
 ```
 
 ### Common Options
 
 ```bash
 # Specify output filename
-./iperf.plot.py -f ./results -o bandwidth_plot.png
+./iperf3_plot.py -f ./results -o bandwidth_plot.png
 
 # Use MBps instead of Mbps
-./iperf.plot.py -f ./results --unit MBps
+./iperf3_plot.py -f ./results --unit MBps
 
 # Combined plot (streams + total on same graph)
-./iperf.plot.py -f ./results --plot-style combined
+./iperf3_plot.py -f ./results --plot-style combined
 
 # Add custom title
-./iperf.plot.py -f ./results -t "My Network Performance Test"
+./iperf3_plot.py -f ./results -t "My Network Performance Test"
 ```
 
 ### Advanced Options
@@ -74,27 +74,27 @@ Add upper and lower threshold lines:
 
 ```bash
 # Simple threshold
-./iperf.plot.py -f ./results -u 1000 -l 800
+./iperf3_plot.py -f ./results -u 1000 -l 800
 
 # Multiple labeled boundaries
-./iperf.plot.py -f ./results -b "[1000,900,Expected][800,700,Minimum]"
+./iperf3_plot.py -f ./results -b "[1000,900,Expected][800,700,Minimum]"
 ```
 
 #### Filtering Files
 
 ```bash
 # Plot specific files only
-./iperf.plot.py -f ./results -p "test1.json,test2.json"
+./iperf3_plot.py -f ./results -p "test1.json,test2.json"
 
 # Exclude specific files
-./iperf.plot.py -f ./results -n "failed_test.json,warmup.json"
+./iperf3_plot.py -f ./results -n "failed_test.json,warmup.json"
 ```
 
 #### Custom Output Names
 
 ```bash
 # Specify both stream and sum plot filenames
-./iperf.plot.py -f ./results -o streams.png -s totals.png
+./iperf3_plot.py -f ./results -o streams.png -s totals.png
 ```
 
 ## Command-Line Options
@@ -123,7 +123,7 @@ Add upper and lower threshold lines:
 iperf3 -c server.example.com -t 60 -P 4 -J > results.json
 
 # Create plots
-./iperf.plot.py -f . -p results.json -t "4-Stream Test to Server"
+./iperf3_plot.py -f . -p results.json -t "4-Stream Test to Server"
 ```
 
 Output:
@@ -140,14 +140,14 @@ Output:
 #   ├── test_1gbps.json
 #   └── test_100mbps.json
 
-./iperf.plot.py -f /tests --plot-style combined -t "Interface Comparison"
+./iperf3_plot.py -f /tests --plot-style combined -t "Interface Comparison"
 ```
 
 ### Example 3: Performance Validation
 
 ```bash
 # Test with expected 10 Gbps link (9.5-10 Gbps acceptable)
-./iperf.plot.py -f ./results \
+./iperf3_plot.py -f ./results \
   -u 10000 -l 9500 \
   -t "10G Link Validation" \
   --unit Mbps
@@ -157,7 +157,7 @@ Output:
 
 ```bash
 # Plot hourly tests, exclude failures
-./iperf.plot.py -f /var/log/network_tests \
+./iperf3_plot.py -f /var/log/network_tests \
   -n "failed.json,incomplete.json" \
   -b "[1000,950,Target][800,750,Acceptable]" \
   -o daily_performance.png
