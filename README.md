@@ -264,7 +264,7 @@ MIT License - Feel free to use and modify as needed.
 
 ## Author
 
-Network Performance Analysis Tool
+Mohamed Amine Nasr
 
 ## Changelog
 
