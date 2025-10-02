@@ -282,6 +282,4 @@ For issues, questions, or feature requests, please open an issue on the project 
 
 ## See Also
 
-- [iperf3 Documentation](https://iperf.fr/)
-- [iperf3 GitHub](https://github.com/esnet/iperf)
-- [Network Performance Testing Best Practices](https://fasterdata.es.net/performance-testing/)
+- [iperf3 Main Code](https://github.com/hchiuzhuo/iperfPlotter/blob/master/iperf3_plot.py)
