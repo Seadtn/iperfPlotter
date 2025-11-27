@@ -174,8 +174,10 @@ class IperfPlotter:
         self._add_bounds(x_max, y_level)
         
         plt.title(f"{title} - Individual Streams", fontsize=16, pad=20)
-        plt.text(x_max * 0.98, y_max * 0.95, f"{desc} - Individual streams", 
-                fontsize=10, ha='right', va='top', alpha=0.7)
+        plt.text(0.98, 0.95, f"{desc} - Individual streams",
+         transform=plt.gca().transAxes,
+         fontsize=10, ha='right', va='top', alpha=0.7)
+
         
         plt.tight_layout()
         plt.savefig(filename, bbox_inches="tight", dpi=300)
@@ -215,9 +217,9 @@ class IperfPlotter:
         self._add_bounds(x_max, y_level)
         
         plt.title(f"{title} - Total", fontsize=16, pad=20)
-        plt.text(x_max * 0.98, y_max * 0.95, f"{desc} - Aggregate throughput", 
-                fontsize=10, ha='right', va='top', alpha=0.7)
-        
+        plt.text(0.98, 0.95, f"{desc} - Aggregate throughput",
+         transform=plt.gca().transAxes,
+         fontsize=10, ha='right', va='top', alpha=0.7)
         plt.tight_layout()
         plt.savefig(filename, bbox_inches="tight", dpi=300)
         plt.close()
@@ -258,8 +260,9 @@ class IperfPlotter:
         self._add_bounds(x_max, y_level)
         
         plt.title(title, fontsize=16, pad=20)
-        plt.text(x_max * 0.98, y_max * 0.95, desc, fontsize=10, 
-                ha='right', va='top', alpha=0.7)
+        plt.text(0.98, 0.95, desc, transform=plt.gca().transAxes,
+         fontsize=10, ha='right', va='top', alpha=0.7)
+
         
         plt.tight_layout()
         plt.savefig(filename, bbox_inches="tight", dpi=300)
