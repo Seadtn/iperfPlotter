@@ -408,58 +408,66 @@ class IperfDataParser:
     
     def _generate_bandwidth(self, iperf_data, unit='Mbps'):
         """
-        Generate bandwidth time series from iperf3 JSON data
-        
+        Generate bandwidth time series from iperf3 JSON data.
+
         Extracts bandwidth measurements from iperf3 JSON output and converts
-        them into pandas Series objects organized by stream.
-        
+        them into pandas Series objects organized by stream. Also calculates
+        a Total_Sum series that matches the peak value calculation of the TCL iperf procedure.
+
         Args:
             iperf_data (dict): Parsed iperf3 JSON data
-            unit (str, optional): Target bandwidth unit (Mbps or MBps). Defaults to 'Mbps'.
-            
+            unit (str, optional): Target bandwidth unit ('Mbps' or 'MBps'). Defaults to 'Mbps'.
+
         Returns:
             dict: Dictionary mapping stream names to pandas Series objects.
                 Keys include 'Stream_1', 'Stream_2', etc., and 'Total_Sum'.
         """
         duration = iperf_data.get('start', {}).get('test_start', {}).get('duration', 0)
-        divisor = 1024 * 1024 * 8 if unit == 'MBps' else 1024 * 1024
-        
+        # Use decimal units: 1e6 bits per second for Mbps
+        divisor = 8 * 1_000_000 if unit == 'MBps' else 1_000_000
+
         streams_data = {}
         sum_data = {}
-        
+
         for interval in iperf_data.get('intervals', []):
             streams = interval.get('streams', [])
             if not streams:
                 continue
-            
-            time_point = round(float(streams[0].get('start', 0)), 0)
+
+            # Use exact start time, no rounding
+            time_point = float(streams[0].get('start', 0))
             if time_point > duration:
                 continue
-            
-            interval_sum = 0
+
+            interval_sum_bps = 0  # sum in bits per second first
             for idx, stream in enumerate(streams):
                 stream_name = f"Stream_{idx + 1}"
-                bw_value = round(float(stream.get('bits_per_second', 0)) / divisor, 3)
-                
+                bw_bps = float(stream.get('bits_per_second', 0))
+                interval_sum_bps += bw_bps
+
+                # Initialize stream series if not exists
                 if stream_name not in streams_data:
                     streams_data[stream_name] = {'idx': [], 'values': []}
-                
+
+                # Convert each stream to desired unit
+                bw_value = bw_bps / divisor
                 streams_data[stream_name]['idx'].append(time_point)
                 streams_data[stream_name]['values'].append(bw_value)
-                interval_sum += bw_value
-            
-            sum_data[time_point] = interval_sum
-        
+
+            # Convert interval sum to desired unit after summing
+            sum_data[time_point] = interval_sum_bps / divisor
+
         # Convert to pandas Series
         result = {
             name: pd.Series(data['values'], index=data['idx'])
             for name, data in streams_data.items()
         }
-        
+
         if sum_data:
             result['Total_Sum'] = pd.Series(list(sum_data.values()), index=list(sum_data.keys()))
-        
+
         return result
+ 
     
     def get_dataset(self):
         """
