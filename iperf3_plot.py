@@ -141,7 +141,51 @@ class IperfPlotter:
                 plt.axhline(y=lower, color=color, linestyle='--', linewidth=2, alpha=0.8)
                 plt.text(x_max * 0.02, lower - y_level/4, 
                         f'{tag} (Lower: {lower})', fontsize=10, color=color)
-    
+
+    def _place_legend(self, n_streams):
+        """
+        Place legend inside or outside axes based on stream count.
+
+        For a small number of streams the legend is placed outside the axes
+        (right side). For many streams it is placed inside to avoid the
+        tight_layout warning caused by out-of-axes artists.
+
+        Args:
+            n_streams (int): Number of streams (legend entries) in the plot.
+
+        Returns:
+            bool: True if the legend is external (outside axes), False if internal.
+        """
+        if n_streams <= 4:
+            plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=11)
+            return True   # external legend
+        else:
+            plt.legend(loc='upper right', fontsize=9, ncol=2)
+            return False  # internal legend
+
+    def _save_figure(self, filename, external_legend=False):
+        """
+        Save the current figure, handling tight_layout conflicts.
+
+        When the legend is placed outside the axes, tight_layout() raises a
+        UserWarning and may clip the legend. In that case we use
+        subplots_adjust() to deterministically reserve space on the right,
+        which is consistent regardless of matplotlib version or font metrics.
+
+        Args:
+            filename (str): Output file path.
+            external_legend (bool): Whether the legend is outside the axes.
+        """
+        if external_legend:
+            # Reserve 25 % of figure width for the external legend.
+            # Decrease right= further (e.g. 0.65) if legend entries are very long.
+            plt.subplots_adjust(right=0.75)
+        else:
+            plt.tight_layout()
+
+        plt.savefig(filename, bbox_inches="tight", dpi=300)
+        plt.close()
+
     def plot_streams_only(self, dataset, filename, desc, title, unit='Mbps'):
         """
         Create a plot showing only individual stream bandwidths
@@ -170,18 +214,15 @@ class IperfPlotter:
             plt.plot(stream_data.index, stream_data[col].values, 
                     lw=2, color=self.colors[i % len(self.colors)], label=col)
         
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=11)
+        external = self._place_legend(len(stream_cols))
         self._add_bounds(x_max, y_level)
         
         plt.title(f"{title} - Individual Streams", fontsize=16, pad=20)
         plt.text(0.98, 0.95, f"{desc} - Individual streams",
-         transform=plt.gca().transAxes,
-         fontsize=10, ha='right', va='top', alpha=0.7)
+                 transform=plt.gca().transAxes,
+                 fontsize=10, ha='right', va='top', alpha=0.7)
 
-        
-        plt.tight_layout()
-        plt.savefig(filename, bbox_inches="tight", dpi=300)
-        plt.close()
+        self._save_figure(filename, external_legend=external)
     
     def plot_sum_only(self, dataset, filename, desc, title, unit='Mbps'):
         """
@@ -213,16 +254,16 @@ class IperfPlotter:
         plt.plot(sum_data.index, sum_data['Total_Sum'].values, 
                 lw=4, color='darkblue', label='Total Sum')
         
+        # Single entry — always fits inside, no external legend needed
         plt.legend(loc='upper right', fontsize=12)
         self._add_bounds(x_max, y_level)
         
         plt.title(f"{title} - Total", fontsize=16, pad=20)
         plt.text(0.98, 0.95, f"{desc} - Aggregate throughput",
-         transform=plt.gca().transAxes,
-         fontsize=10, ha='right', va='top', alpha=0.7)
-        plt.tight_layout()
-        plt.savefig(filename, bbox_inches="tight", dpi=300)
-        plt.close()
+                 transform=plt.gca().transAxes,
+                 fontsize=10, ha='right', va='top', alpha=0.7)
+
+        self._save_figure(filename, external_legend=False)
     
     def plot_streams_with_sum(self, dataset, filename, desc, title, unit='Mbps'):
         """
@@ -256,17 +297,15 @@ class IperfPlotter:
             plt.plot(dataset.index, dataset['Total_Sum'].values, 
                     lw=3, color='black', label='Total Sum')
         
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10)
+        # +1 for Total_Sum entry in legend
+        external = self._place_legend(len(stream_cols) + 1)
         self._add_bounds(x_max, y_level)
         
         plt.title(title, fontsize=16, pad=20)
         plt.text(0.98, 0.95, desc, transform=plt.gca().transAxes,
-         fontsize=10, ha='right', va='top', alpha=0.7)
+                 fontsize=10, ha='right', va='top', alpha=0.7)
 
-        
-        plt.tight_layout()
-        plt.savefig(filename, bbox_inches="tight", dpi=300)
-        plt.close()
+        self._save_figure(filename, external_legend=external)
 
 
 class IperfDataParser:
