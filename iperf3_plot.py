@@ -186,7 +186,6 @@ class IperfPlotter:
             # Lower this value (e.g. 0.65) if legend labels are very long.
             plt.subplots_adjust(right=0.75)
 
-        # Never call tight_layout() — bbox_inches='tight' handles all artists
         # including external legends, title padding, and axis labels.
         plt.savefig(filename, bbox_inches="tight", dpi=300)
         plt.close()
