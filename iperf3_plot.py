@@ -108,16 +108,25 @@ class IperfPlotter:
                 - y_level (float): Spacing between y-axis ticks
         """
         values = dataframe.values if hasattr(dataframe, 'values') else dataframe
-        
+
         y_level = (values.max() - values.min()) / 20
         if y_level == 0:
             y_level = values.max() * 0.05  # 5% of max if no variation
-        
+
+        # Guard: enforce a minimum tick spacing of 2% of the max value.
+        # Without this, near-flat data produces dozens of yticks that
+        # overflow the vertical margins and trigger a UserWarning.
+        y_level = max(y_level, values.max() * 0.02)
+
+        # Absolute fallback for all-zero data
+        if y_level == 0:
+            y_level = 1.0
+
         y_max = values.max() + y_level
-        y_min = max(0, values.min() - y_level/2)
+        y_min = max(0, values.min() - y_level / 2)
         x_max = dataframe.index[-1]
         x_min = dataframe.index[0]
-        
+
         return y_min, y_max, x_min, x_max, y_level
     
     def _add_bounds(self, x_max, y_level):
@@ -166,23 +175,19 @@ class IperfPlotter:
     def _save_figure(self, filename, external_legend=False):
         """
         Save the current figure, handling tight_layout conflicts.
-
-        When the legend is placed outside the axes, tight_layout() raises a
-        UserWarning and may clip the legend. In that case we use
-        subplots_adjust() to deterministically reserve space on the right,
-        which is consistent regardless of matplotlib version or font metrics.
-
         Args:
             filename (str): Output file path.
             external_legend (bool): Whether the legend is outside the axes.
+                When True, subplots_adjust reserves right-side space so the
+                external legend is not clipped.
         """
         if external_legend:
-            # Reserve 25 % of figure width for the external legend.
-            # Decrease right= further (e.g. 0.65) if legend entries are very long.
+            # Reserve 25% of figure width for the external legend.
+            # Lower this value (e.g. 0.65) if legend labels are very long.
             plt.subplots_adjust(right=0.75)
-        else:
-            plt.tight_layout()
 
+        # Never call tight_layout() — bbox_inches='tight' handles all artists
+        # including external legends, title padding, and axis labels.
         plt.savefig(filename, bbox_inches="tight", dpi=300)
         plt.close()
 
